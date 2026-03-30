@@ -1,0 +1,1757 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Pipelife – Machine Tracker</title>
+
+<!-- Google Fonts: Barlow Condensed (industrial/factory) + Barlow (body) -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   CSS VARIABLES – Pipelife brand palette
+   ============================================================ */
+:root {
+  --blue-dark:   #003087;   /* Pipelife deep navy */
+  --blue-main:   #0057B8;   /* Pipelife primary blue */
+  --blue-light:  #1A8FE3;   /* accent / highlights */
+  --blue-pale:   #E8F1FB;   /* card backgrounds */
+  --white:       #FFFFFF;
+  --grey-100:    #F4F6FA;
+  --grey-200:    #E2E7EF;
+  --grey-400:    #A0AABC;
+  --grey-700:    #3D4A5C;
+  --grey-900:    #14202E;
+  --success:     #1DB87A;
+  --danger:      #E03B3B;
+  --warn:        #F0A020;
+
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   22px;
+
+  --shadow-sm:   0 2px 8px rgba(0,48,135,0.08);
+  --shadow-md:   0 6px 24px rgba(0,48,135,0.13);
+  --shadow-lg:   0 12px 40px rgba(0,48,135,0.18);
+
+  --header-h:    108px;
+  --nav-h:       66px;
+
+  --font-display: 'Barlow Condensed', sans-serif;
+  --font-body:    'Barlow', sans-serif;
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: var(--font-body);
+  background: var(--grey-100);
+  color: var(--grey-900);
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+/* ============================================================
+   LAYOUT SHELL
+   ============================================================ */
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;           /* dynamic viewport height on mobile */
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--white);
+  position: relative;
+  box-shadow: 0 0 60px rgba(0,0,0,0.10);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+#header {
+  position: relative;
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-main) 100%);
+  padding: 14px 20px 12px;
+  flex-shrink: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+
+/* diagonal stripe accent */
+#header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--blue-light), var(--blue-dark));
+  opacity: .5;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+/* Logo area – user drops their image here */
+#logo-area {
+  width: 120px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-shrink: 0;
+}
+
+#logo-area img {
+  max-height: 36px;
+  max-width: 120px;
+  object-fit: contain;
+  filter: brightness(0) invert(1); /* force white logo on dark bg */
+}
+
+/* Fallback text shown when no logo image is present */
+#logo-area .logo-fallback {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: .5px;
+  color: var(--white);
+  text-transform: uppercase;
+  /* REPLACE THIS with your image: <img src="pipelife-logo.png"> in the #logo-area div */
+}
+
+.header-meta {
+  text-align: right;
+  flex: 1;
+}
+
+.header-operator {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: .8px;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+.header-time {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 22px;
+  color: var(--white);
+  letter-spacing: 1px;
+  line-height: 1;
+}
+
+.header-bottom {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.header-badge {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.22);
+  border-radius: 100px;
+  padding: 3px 12px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .6px;
+  color: rgba(255,255,255,0.90);
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   BOTTOM NAVIGATION
+   ============================================================ */
+#nav {
+  display: flex;
+  background: var(--white);
+  border-top: 1.5px solid var(--grey-200);
+  flex-shrink: 0;
+  z-index: 100;
+  box-shadow: 0 -4px 18px rgba(0,48,135,0.08);
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 0 10px;
+  gap: 3px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-btn:active { background: var(--grey-100); }
+
+.nav-icon {
+  font-size: 22px;
+  line-height: 1;
+  transition: transform .2s;
+}
+
+.nav-btn.active .nav-icon { transform: scale(1.12); }
+
+.nav-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  transition: color .15s;
+}
+
+.nav-btn.active .nav-label { color: var(--blue-main); }
+
+.nav-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--blue-main);
+  margin-top: 1px;
+  opacity: 0;
+  transition: opacity .15s;
+}
+
+.nav-btn.active .nav-dot { opacity: 1; }
+
+/* ============================================================
+   TABS / PAGES
+   ============================================================ */
+#pages {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.page {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 16px 14px 20px;
+  opacity: 0;
+  transform: translateX(20px);
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+/* ============================================================
+   SECTION HEADINGS
+   ============================================================ */
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  margin: 18px 0 10px;
+}
+
+.section-title:first-child { margin-top: 0; }
+
+/* ============================================================
+   TODAY SUMMARY CARD
+   ============================================================ */
+.today-card {
+  background: linear-gradient(130deg, var(--blue-dark), var(--blue-main));
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  color: var(--white);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.today-card::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+
+.today-card-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 6px;
+}
+
+.today-card-machines {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.today-chip {
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.30);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: .3px;
+}
+
+.today-empty {
+  font-size: 13px;
+  color: rgba(255,255,255,0.55);
+  font-style: italic;
+}
+
+.today-count {
+  margin-top: 12px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: .4px;
+}
+
+/* ============================================================
+   MACHINE GRID
+   ============================================================ */
+.machine-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.machine-btn {
+  background: var(--white);
+  border: 2px solid var(--grey-200);
+  border-radius: var(--radius-md);
+  padding: 14px 10px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s ease;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.machine-btn:active {
+  transform: scale(0.96);
+  box-shadow: none;
+}
+
+.machine-btn.logged-today {
+  border-color: var(--blue-light);
+  background: var(--blue-pale);
+}
+
+.machine-btn.logged-today .machine-name { color: var(--blue-dark); }
+
+.machine-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.machine-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: .2px;
+  color: var(--grey-700);
+  line-height: 1.25;
+  text-align: center;
+}
+
+.machine-count-badge {
+  position: absolute;
+  top: 7px; right: 8px;
+  background: var(--blue-main);
+  color: var(--white);
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 100px;
+}
+
+.machine-btn.logged-today .machine-count-badge {
+  background: var(--blue-dark);
+}
+
+/* Ripple animation on tap */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0,87,184,0.20);
+  transform: scale(0);
+  animation: ripple-anim .5s linear;
+  pointer-events: none;
+}
+
+@keyframes ripple-anim {
+  to { transform: scale(3); opacity: 0; }
+}
+
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+#toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--grey-900);
+  color: var(--white);
+  padding: 11px 20px;
+  border-radius: 100px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .22s, transform .22s;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: 90vw;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+#toast.success { background: var(--success); }
+#toast.warn    { background: var(--warn); color: var(--grey-900); }
+#toast.danger  { background: var(--danger); }
+
+/* ============================================================
+   STATISTICS PAGE
+   ============================================================ */
+.stats-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.stat-tile {
+  background: var(--white);
+  border: 1.5px solid var(--grey-200);
+  border-radius: var(--radius-md);
+  padding: 12px 8px 10px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.stat-tile-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  color: var(--blue-main);
+  line-height: 1;
+}
+
+.stat-tile-label {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  margin-top: 4px;
+}
+
+/* ranking list */
+.rank-list { display: flex; flex-direction: column; gap: 8px; }
+
+.rank-item {
+  background: var(--white);
+  border: 1.5px solid var(--grey-200);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.rank-item.rank-1 { border-color: #FFD700; background: #FFFDF0; }
+.rank-item.rank-2 { border-color: #C0C0C0; }
+.rank-item.rank-3 { border-color: #CD7F32; }
+
+/* fill bar behind item */
+.rank-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--blue-pale);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  z-index: 0;
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+
+.rank-item.rank-1 .rank-fill { background: rgba(255,215,0,0.12); }
+
+.rank-pos {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--grey-400);
+  min-width: 24px;
+  text-align: center;
+  z-index: 1;
+}
+
+.rank-item.rank-1 .rank-pos { color: #B8860B; }
+.rank-item.rank-2 .rank-pos { color: #808080; }
+.rank-item.rank-3 .rank-pos { color: #8B4513; }
+
+.rank-info { flex: 1; z-index: 1; }
+
+.rank-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--grey-900);
+}
+
+.rank-pct {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--grey-400);
+}
+
+.rank-count {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--blue-main);
+  z-index: 1;
+}
+
+/* ============================================================
+   HISTORY PAGE
+   ============================================================ */
+.filter-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 14px;
+  scrollbar-width: none;
+}
+
+.filter-row::-webkit-scrollbar { display: none; }
+
+.filter-btn {
+  background: var(--white);
+  border: 1.5px solid var(--grey-200);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: var(--grey-700);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+
+.filter-btn.active {
+  background: var(--blue-main);
+  border-color: var(--blue-main);
+  color: var(--white);
+}
+
+.search-row {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--white);
+  border: 1.5px solid var(--grey-200);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px 10px 38px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--grey-900);
+  outline: none;
+  transition: border-color .15s;
+}
+
+.search-input:focus { border-color: var(--blue-light); }
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--grey-400);
+  pointer-events: none;
+}
+
+/* day groups */
+.day-group { margin-bottom: 16px; }
+
+.day-group-header {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--grey-400);
+  padding: 0 2px 8px;
+  border-bottom: 1.5px solid var(--grey-200);
+  margin-bottom: 8px;
+}
+
+.log-item {
+  background: var(--white);
+  border: 1.5px solid var(--grey-200);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+.log-machine-icon { font-size: 20px; }
+
+.log-info { flex: 1; }
+
+.log-machine {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--grey-900);
+}
+
+.log-time {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--grey-400);
+}
+
+.log-week-badge {
+  background: var(--blue-pale);
+  color: var(--blue-main);
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  letter-spacing: .4px;
+}
+
+.log-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.log-action-btn {
+  background: var(--grey-100);
+  border: 1.5px solid var(--grey-200);
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.log-action-btn:active { background: var(--grey-200); }
+.log-action-btn.danger:active { background: #FFE8E8; }
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--grey-400);
+}
+
+.empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+
+.empty-state-text {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: .4px;
+}
+
+/* ============================================================
+   MODAL (Edit / Confirm)
+   ============================================================ */
+#modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s;
+}
+
+#modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.modal-sheet {
+  background: var(--white);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 20px 20px 32px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80dvh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+}
+
+#modal-overlay.open .modal-sheet { transform: translateY(0); }
+
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--grey-200);
+  border-radius: 2px;
+  margin: 0 auto 18px;
+}
+
+.modal-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--grey-900);
+  margin-bottom: 16px;
+}
+
+.modal-machine-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.modal-machine-option {
+  background: var(--grey-100);
+  border: 1.5px solid var(--grey-200);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--grey-900);
+  cursor: pointer;
+  transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.modal-machine-option:active { background: var(--blue-pale); border-color: var(--blue-main); }
+
+.modal-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: .5px;
+  cursor: pointer;
+  transition: opacity .15s;
+  margin-top: 8px;
+}
+
+.modal-btn:active { opacity: .80; }
+
+.modal-btn.primary { background: var(--blue-main); color: var(--white); }
+.modal-btn.danger  { background: var(--danger); color: var(--white); }
+.modal-btn.ghost   { background: var(--grey-100); color: var(--grey-700); border: 1.5px solid var(--grey-200); }
+
+/* ============================================================
+   SETTINGS / EXPORT PAGE
+   ============================================================ */
+.settings-section { margin-bottom: 24px; }
+
+.settings-card {
+  background: var(--white);
+  border: 1.5px solid var(--grey-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-bottom: 1px solid var(--grey-200);
+  cursor: pointer;
+  transition: background .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-row:last-child { border-bottom: none; }
+.settings-row:active { background: var(--grey-100); }
+
+.settings-row-icon { font-size: 22px; }
+
+.settings-row-info { flex: 1; }
+
+.settings-row-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--grey-900);
+}
+
+.settings-row-sub {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--grey-400);
+  margin-top: 1px;
+}
+
+.settings-row-arrow {
+  color: var(--grey-400);
+  font-size: 18px;
+}
+
+/* streak banner */
+.streak-card {
+  background: linear-gradient(130deg, #FF6B00, #FFB300);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--white);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 18px;
+}
+
+.streak-icon { font-size: 36px; }
+
+.streak-info {}
+
+.streak-title {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.75);
+}
+
+.streak-value {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  color: var(--white);
+  line-height: 1;
+}
+
+.streak-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.75);
+}
+
+/* ============================================================
+   SCROLLBAR (desktop preview)
+   ============================================================ */
+.page::-webkit-scrollbar { width: 3px; }
+.page::-webkit-scrollbar-track { background: transparent; }
+.page::-webkit-scrollbar-thumb { background: var(--grey-200); border-radius: 2px; }
+
+/* ============================================================
+   ANIMATED TRANSITIONS
+   ============================================================ */
+@keyframes pop-in {
+  0%   { transform: scale(.9); opacity: 0; }
+  100% { transform: scale(1);  opacity: 1; }
+}
+
+.pop-in { animation: pop-in .2s ease forwards; }
+
+/* page left-to-right transition when going back */
+.page.slide-left {
+  transform: translateX(-20px);
+}
+
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ======================================================
+       HEADER
+  ======================================================= -->
+  <header id="header">
+    <div class="header-top">
+      <!-- LOGO AREA: Replace the text inside with <img src="pipelife-logo.png" alt="Pipelife"> -->
+      <div id="logo-area">
+        <span class="logo-fallback">PIPELIFE</span>
+      </div>
+      <div class="header-meta">
+        <div class="header-operator">Operator: Niels</div>
+        <div class="header-time" id="header-clock">--:--</div>
+      </div>
+    </div>
+    <div class="header-bottom">
+      <span class="header-badge" id="header-date">--</span>
+      <span class="header-badge" id="header-week">Week --</span>
+    </div>
+  </header>
+
+  <!-- ======================================================
+       PAGES
+  ======================================================= -->
+  <div id="pages">
+
+    <!-- ---- PAGE 1: MACHINES ---- -->
+    <div class="page active" id="page-machines">
+
+      <!-- Today summary -->
+      <div class="today-card">
+        <div class="today-card-title">📋 Vandaag gewerkt aan</div>
+        <div class="today-card-machines" id="today-chips">
+          <span class="today-empty">Nog niets gelogd vandaag</span>
+        </div>
+        <div class="today-count" id="today-count"></div>
+      </div>
+
+      <div class="section-title">Kies machine</div>
+
+      <!-- Machine grid injected by JS -->
+      <div class="machine-grid" id="machine-grid"></div>
+
+    </div>
+
+    <!-- ---- PAGE 2: STATISTICS ---- -->
+    <div class="page" id="page-stats">
+
+      <!-- Summary tiles -->
+      <div class="stats-summary">
+        <div class="stat-tile">
+          <div class="stat-tile-value" id="stat-total">0</div>
+          <div class="stat-tile-label">Logs</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-tile-value" id="stat-unique">0</div>
+          <div class="stat-tile-label">Machines</div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-tile-value" id="stat-today">0</div>
+          <div class="stat-tile-label">Vandaag</div>
+        </div>
+      </div>
+
+      <div class="section-title">🏆 Ranking</div>
+      <div class="rank-list" id="rank-list">
+        <div class="empty-state">
+          <div class="empty-state-icon">📊</div>
+          <div class="empty-state-text">Nog geen data</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ---- PAGE 3: HISTORY ---- -->
+    <div class="page" id="page-history">
+
+      <!-- Filter bar -->
+      <div class="filter-row" id="filter-row">
+        <button class="filter-btn active" data-filter="today">Vandaag</button>
+        <button class="filter-btn" data-filter="week">Deze week</button>
+        <button class="filter-btn" data-filter="month">Deze maand</button>
+        <button class="filter-btn" data-filter="all">Alles</button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-row">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" id="search-input" placeholder="Zoek op machine…" />
+      </div>
+
+      <!-- Log list -->
+      <div id="history-list"></div>
+
+    </div>
+
+    <!-- ---- PAGE 4: SETTINGS ---- -->
+    <div class="page" id="page-settings">
+
+      <!-- Streak card -->
+      <div class="streak-card" id="streak-card">
+        <div class="streak-icon">🔥</div>
+        <div class="streak-info">
+          <div class="streak-title">Actieve reeks</div>
+          <div class="streak-value" id="streak-value">0</div>
+          <div class="streak-sub">werkdagen op rij gelogd</div>
+        </div>
+      </div>
+
+      <div class="section-title">Data beheer</div>
+      <div class="settings-section">
+        <div class="settings-card">
+          <div class="settings-row" id="btn-export">
+            <div class="settings-row-icon">📤</div>
+            <div class="settings-row-info">
+              <div class="settings-row-title">Exporteer data</div>
+              <div class="settings-row-sub">Sla alle logs op als JSON-bestand</div>
+            </div>
+            <div class="settings-row-arrow">›</div>
+          </div>
+          <div class="settings-row" id="btn-import">
+            <div class="settings-row-icon">📥</div>
+            <div class="settings-row-info">
+              <div class="settings-row-title">Importeer data</div>
+              <div class="settings-row-sub">Laad een eerder geëxporteerd JSON-bestand</div>
+            </div>
+            <div class="settings-row-arrow">›</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Gevaarzone</div>
+      <div class="settings-section">
+        <div class="settings-card">
+          <div class="settings-row" id="btn-reset">
+            <div class="settings-row-icon">🗑️</div>
+            <div class="settings-row-info">
+              <div class="settings-row-title" style="color:var(--danger)">Wis alle statistieken</div>
+              <div class="settings-row-sub">Dit kan niet ongedaan worden gemaakt</div>
+            </div>
+            <div class="settings-row-arrow">›</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">Over</div>
+      <div class="settings-section">
+        <div class="settings-card">
+          <div class="settings-row" style="cursor:default">
+            <div class="settings-row-icon">ℹ️</div>
+            <div class="settings-row-info">
+              <div class="settings-row-title">Pipelife Machine Tracker</div>
+              <div class="settings-row-sub">Versie 1.0 · Operator: Niels</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden file input for import -->
+      <input type="file" id="import-file-input" accept=".json" style="display:none" />
+
+    </div>
+
+  </div><!-- /pages -->
+
+  <!-- ======================================================
+       BOTTOM NAV
+  ======================================================= -->
+  <nav id="nav">
+    <button class="nav-btn active" data-page="machines">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Machines</span>
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-page="stats">
+      <span class="nav-icon">📊</span>
+      <span class="nav-label">Statistieken</span>
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-page="history">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Historie</span>
+      <span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" data-page="settings">
+      <span class="nav-icon">🔧</span>
+      <span class="nav-label">Instellingen</span>
+      <span class="nav-dot"></span>
+    </button>
+  </nav>
+
+</div><!-- /app -->
+
+<!-- ======================================================
+     TOAST
+======================================================= -->
+<div id="toast"></div>
+
+<!-- ======================================================
+     MODAL OVERLAY (bottom sheet)
+======================================================= -->
+<div id="modal-overlay">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- ======================================================
+     JAVASCRIPT
+======================================================= -->
+<script>
+// ============================================================
+//  CONFIG
+// ============================================================
+const OPERATOR = 'Niels';
+
+// Machine list with icons
+const MACHINES = [
+  { name: 'Grote bochten',          icon: '🔵' },
+  { name: 'Bochten 160/200',        icon: '🟦' },
+  { name: 'Bochten 110',            icon: '🔷' },
+  { name: 'Putten',                 icon: '🕳️' },
+  { name: 'Verloopstukken',         icon: '🔩' },
+  { name: 'Dubbelwerker',           icon: '⚙️' },
+  { name: 'Koppelingen 63',         icon: '🔗' },
+  { name: 'Koppelingen 200',        icon: '🔗' },
+  { name: 'Koppelingen 160',        icon: '🔗' },
+  { name: 'Koppelingen 110',        icon: '🔗' },
+  { name: 'Koppelingen bulldog 400',icon: '🐾' },
+  { name: 'Eindkappen',             icon: '🔴' },
+  { name: 'Inpak werk',             icon: '📦' },
+  { name: 'Trompen',                icon: '🔧' },
+];
+
+// ============================================================
+//  STORAGE HELPERS
+// ============================================================
+const STORAGE_KEY = 'pipelife_logs_v1';
+
+function loadLogs() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch { return []; }
+}
+
+function saveLogs(logs) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+}
+
+// ============================================================
+//  DATE / TIME HELPERS
+// ============================================================
+function getWeekNumber(d) {
+  // ISO week number
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+}
+
+function todayStr() {
+  const n = new Date();
+  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-${String(n.getDate()).padStart(2,'0')}`;
+}
+
+function formatDate(d) {
+  // d is ISO string YYYY-MM-DD
+  const [y, m, day] = d.split('-');
+  const days = ['zo','ma','di','wo','do','vr','za'];
+  const date = new Date(y, m-1, day);
+  return `${days[date.getDay()]} ${day}-${m}-${y}`;
+}
+
+function formatTime(ts) {
+  return ts ? ts.slice(0,5) : '--:--';
+}
+
+// ============================================================
+//  HEADER CLOCK
+// ============================================================
+function updateClock() {
+  const now = new Date();
+  document.getElementById('header-clock').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  const dayNames = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+  const monthNames = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  document.getElementById('header-date').textContent =
+    `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+
+  document.getElementById('header-week').textContent = `Week ${getWeekNumber(now)}`;
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+// ============================================================
+//  TOAST
+// ============================================================
+let toastTimer = null;
+
+function showToast(msg, type = '', duration = 2200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = type ? `show ${type}` : 'show';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, duration);
+}
+
+// ============================================================
+//  MODAL
+// ============================================================
+const overlay  = document.getElementById('modal-overlay');
+const modalContent = document.getElementById('modal-content');
+
+function openModal(html) {
+  modalContent.innerHTML = html;
+  overlay.classList.add('open');
+}
+
+function closeModal() {
+  overlay.classList.remove('open');
+}
+
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) closeModal();
+});
+
+// ============================================================
+//  RIPPLE EFFECT
+// ============================================================
+function addRipple(btn, e) {
+  const rect = btn.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = (e.clientX || rect.left + rect.width/2) - rect.left - size/2;
+  const y = (e.clientY || rect.top + rect.height/2) - rect.top - size/2;
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  ripple.style.cssText = `width:${size}px;height:${size}px;left:${x}px;top:${y}px`;
+  btn.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 600);
+}
+
+// ============================================================
+//  NAVIGATION
+// ============================================================
+const pages   = document.querySelectorAll('.page');
+const navBtns = document.querySelectorAll('.nav-btn');
+let currentPage = 'machines';
+
+function switchPage(name) {
+  pages.forEach(p => p.classList.remove('active'));
+  navBtns.forEach(b => b.classList.remove('active'));
+
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.querySelector(`.nav-btn[data-page="${name}"]`).classList.add('active');
+  currentPage = name;
+
+  // refresh the active page
+  if (name === 'machines') renderMachineGrid();
+  if (name === 'stats')    renderStats();
+  if (name === 'history')  renderHistory();
+  if (name === 'settings') renderSettings();
+}
+
+navBtns.forEach(btn => {
+  btn.addEventListener('click', () => switchPage(btn.dataset.page));
+});
+
+// ============================================================
+//  MACHINE GRID
+// ============================================================
+function renderMachineGrid() {
+  const logs  = loadLogs();
+  const today = todayStr();
+  const todayLogs = logs.filter(l => l.date === today);
+  const todayMachineNames = new Set(todayLogs.map(l => l.machine));
+
+  // Count per machine (all time)
+  const counts = {};
+  logs.forEach(l => { counts[l.machine] = (counts[l.machine] || 0) + 1; });
+
+  const grid = document.getElementById('machine-grid');
+  grid.innerHTML = '';
+
+  MACHINES.forEach(m => {
+    const isLogged = todayMachineNames.has(m.name);
+    const btn = document.createElement('div');
+    btn.className = 'machine-btn' + (isLogged ? ' logged-today' : '');
+    btn.innerHTML = `
+      ${counts[m.name] ? `<span class="machine-count-badge">${counts[m.name]}</span>` : ''}
+      <span class="machine-icon">${m.icon}</span>
+      <span class="machine-name">${m.name}</span>
+      ${isLogged ? '<span style="font-size:10px;color:var(--blue-main);font-family:var(--font-display);font-weight:700;letter-spacing:.4px;">✓ VANDAAG</span>' : ''}
+    `;
+
+    btn.addEventListener('click', (e) => {
+      addRipple(btn, e);
+      handleMachineLog(m.name, isLogged);
+    });
+
+    grid.appendChild(btn);
+  });
+
+  // Update today summary card
+  updateTodayCard(todayLogs, todayMachineNames);
+}
+
+function updateTodayCard(todayLogs, todayMachineNames) {
+  const chipsEl  = document.getElementById('today-chips');
+  const countEl  = document.getElementById('today-count');
+
+  if (todayMachineNames.size === 0) {
+    chipsEl.innerHTML = '<span class="today-empty">Nog niets gelogd vandaag</span>';
+    countEl.textContent = '';
+  } else {
+    chipsEl.innerHTML = [...todayMachineNames]
+      .map(n => `<span class="today-chip">${n}</span>`)
+      .join('');
+    countEl.textContent = `${todayLogs.length} log${todayLogs.length !== 1 ? 's' : ''} vandaag`;
+  }
+}
+
+// ============================================================
+//  LOG A MACHINE
+// ============================================================
+function handleMachineLog(machineName, alreadyLoggedToday) {
+  if (alreadyLoggedToday) {
+    // Warn but allow duplicate if user confirms
+    openModal(`
+      <div class="modal-title">⚠️ Al gelogd vandaag</div>
+      <p style="font-size:14px;color:var(--grey-700);margin-bottom:16px;line-height:1.5;">
+        Je hebt <strong>${machineName}</strong> vandaag al gelogd.<br>
+        Wil je tóch een extra log toevoegen?
+      </p>
+      <button class="modal-btn primary" id="modal-confirm-dup">Ja, toch loggen</button>
+      <button class="modal-btn ghost" id="modal-cancel">Annuleren</button>
+    `);
+    document.getElementById('modal-confirm-dup').addEventListener('click', () => {
+      closeModal();
+      saveLog(machineName);
+    });
+    document.getElementById('modal-cancel').addEventListener('click', closeModal);
+    return;
+  }
+  saveLog(machineName);
+}
+
+function saveLog(machineName) {
+  const now  = new Date();
+  const logs = loadLogs();
+
+  const entry = {
+    id:       Date.now().toString(36) + Math.random().toString(36).slice(2),
+    machine:  machineName,
+    date:     todayStr(),
+    time:     `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
+    week:     getWeekNumber(now),
+    operator: OPERATOR,
+    createdAt: now.toISOString(),
+  };
+
+  logs.unshift(entry);   // newest first
+  saveLogs(logs);
+
+  showToast(`✅ ${machineName} gelogd!`, 'success');
+  renderMachineGrid();
+}
+
+// ============================================================
+//  STATISTICS
+// ============================================================
+function renderStats() {
+  const logs = loadLogs();
+  const today = todayStr();
+
+  // totals
+  document.getElementById('stat-total').textContent  = logs.length;
+  document.getElementById('stat-today').textContent  = logs.filter(l => l.date === today).length;
+
+  // per machine
+  const counts = {};
+  logs.forEach(l => { counts[l.machine] = (counts[l.machine] || 0) + 1; });
+  const uniqueMachines = Object.keys(counts).length;
+  document.getElementById('stat-unique').textContent = uniqueMachines;
+
+  const total = logs.length;
+  const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+
+  const rankList = document.getElementById('rank-list');
+
+  if (sorted.length === 0) {
+    rankList.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📊</div>
+        <div class="empty-state-text">Nog geen data beschikbaar</div>
+      </div>`;
+    return;
+  }
+
+  rankList.innerHTML = sorted.map(([name, count], i) => {
+    const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+    const rankClass = i === 0 ? ' rank-1' : i === 1 ? ' rank-2' : i === 2 ? ' rank-3' : '';
+    const machine = MACHINES.find(m => m.name === name) || { icon: '⚙️' };
+    return `
+      <div class="rank-item${rankClass}">
+        <div class="rank-fill" style="width:${pct}%"></div>
+        <div class="rank-pos">${i + 1}</div>
+        <div class="rank-info">
+          <div class="rank-name">${machine.icon} ${name}</div>
+          <div class="rank-pct">${pct}% van totaal</div>
+        </div>
+        <div class="rank-count">${count}×</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================================
+//  HISTORY
+// ============================================================
+let activeFilter = 'today';
+let searchQuery  = '';
+
+document.querySelectorAll('#filter-row .filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#filter-row .filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderHistory();
+  });
+});
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  searchQuery = e.target.value.toLowerCase().trim();
+  renderHistory();
+});
+
+function renderHistory() {
+  const allLogs = loadLogs();
+  const now = new Date();
+  const today = todayStr();
+
+  // Week boundaries (Mon–Sun)
+  const dayOfWeek = now.getDay() === 0 ? 6 : now.getDay() - 1; // Mon=0
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - dayOfWeek);
+  const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth()+1).padStart(2,'0')}-${String(weekStart.getDate()).padStart(2,'0')}`;
+
+  const monthStartStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+
+  let filtered = allLogs.filter(l => {
+    if (activeFilter === 'today')  return l.date === today;
+    if (activeFilter === 'week')   return l.date >= weekStartStr;
+    if (activeFilter === 'month')  return l.date >= monthStartStr;
+    return true;
+  });
+
+  if (searchQuery) {
+    filtered = filtered.filter(l => l.machine.toLowerCase().includes(searchQuery));
+  }
+
+  const container = document.getElementById('history-list');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">Geen logs gevonden</div>
+      </div>`;
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  filtered.forEach(l => {
+    if (!groups[l.date]) groups[l.date] = [];
+    groups[l.date].push(l);
+  });
+
+  container.innerHTML = Object.keys(groups)
+    .sort((a,b) => b.localeCompare(a))
+    .map(date => {
+      const items = groups[date];
+      const machine = MACHINES;
+      return `
+        <div class="day-group">
+          <div class="day-group-header">${formatDate(date)} · ${items.length} log${items.length !== 1 ? 's' : ''}</div>
+          ${items.map(log => {
+            const m = MACHINES.find(x => x.name === log.machine) || { icon: '⚙️' };
+            return `
+              <div class="log-item pop-in">
+                <span class="log-machine-icon">${m.icon}</span>
+                <div class="log-info">
+                  <div class="log-machine">${log.machine}</div>
+                  <div class="log-time">⏰ ${formatTime(log.time)} · ${log.operator}</div>
+                </div>
+                <span class="log-week-badge">W${log.week}</span>
+                <div class="log-actions">
+                  <button class="log-action-btn" data-edit="${log.id}" title="Bewerk">✏️</button>
+                  <button class="log-action-btn danger" data-delete="${log.id}" title="Verwijder">🗑️</button>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }).join('');
+
+  // Edit buttons
+  container.querySelectorAll('[data-edit]').forEach(btn => {
+    btn.addEventListener('click', () => openEditModal(btn.dataset.edit));
+  });
+
+  // Delete buttons
+  container.querySelectorAll('[data-delete]').forEach(btn => {
+    btn.addEventListener('click', () => openDeleteModal(btn.dataset.delete));
+  });
+}
+
+// ============================================================
+//  EDIT LOG
+// ============================================================
+function openEditModal(id) {
+  const machineListHTML = MACHINES.map(m => `
+    <div class="modal-machine-option" data-machine="${m.name}">${m.icon} ${m.name}</div>
+  `).join('');
+
+  openModal(`
+    <div class="modal-title">✏️ Log aanpassen</div>
+    <p style="font-size:13px;color:var(--grey-400);margin-bottom:12px;">Kies de juiste machine:</p>
+    <div class="modal-machine-list">${machineListHTML}</div>
+    <button class="modal-btn ghost" id="modal-cancel">Annuleren</button>
+  `);
+
+  document.querySelectorAll('.modal-machine-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const logs = loadLogs();
+      const idx  = logs.findIndex(l => l.id === id);
+      if (idx !== -1) {
+        logs[idx].machine = opt.dataset.machine;
+        saveLogs(logs);
+        showToast('✅ Log bijgewerkt', 'success');
+      }
+      closeModal();
+      renderHistory();
+      if (currentPage === 'machines') renderMachineGrid();
+    });
+  });
+
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+}
+
+// ============================================================
+//  DELETE LOG
+// ============================================================
+function openDeleteModal(id) {
+  const logs = loadLogs();
+  const log  = logs.find(l => l.id === id);
+  if (!log) return;
+
+  openModal(`
+    <div class="modal-title">🗑️ Log verwijderen</div>
+    <p style="font-size:14px;color:var(--grey-700);margin-bottom:16px;line-height:1.5;">
+      Weet je zeker dat je de log voor<br><strong>${log.machine}</strong> wilt verwijderen?
+    </p>
+    <button class="modal-btn danger" id="modal-confirm-delete">Ja, verwijderen</button>
+    <button class="modal-btn ghost" id="modal-cancel">Annuleren</button>
+  `);
+
+  document.getElementById('modal-confirm-delete').addEventListener('click', () => {
+    const updated = loadLogs().filter(l => l.id !== id);
+    saveLogs(updated);
+    showToast('Log verwijderd', 'warn');
+    closeModal();
+    renderHistory();
+    if (currentPage === 'machines') renderMachineGrid();
+  });
+
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+}
+
+// ============================================================
+//  SETTINGS & STREAK
+// ============================================================
+function renderSettings() {
+  const streak = calcStreak();
+  document.getElementById('streak-value').textContent = streak;
+}
+
+function calcStreak() {
+  const logs = loadLogs();
+  if (logs.length === 0) return 0;
+
+  const dates = [...new Set(logs.map(l => l.date))].sort().reverse();
+  const today = todayStr();
+
+  // If no log today or yesterday, streak is 0
+  if (dates[0] !== today) {
+    // Check yesterday
+    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
+    if (dates[0] !== yStr) return 0;
+  }
+
+  let streak = 0;
+  let checkDate = new Date();
+  if (dates[0] !== today) checkDate.setDate(checkDate.getDate() - 1); // start from yesterday
+
+  for (let i = 0; i < dates.length; i++) {
+    const expected = `${checkDate.getFullYear()}-${String(checkDate.getMonth()+1).padStart(2,'0')}-${String(checkDate.getDate()).padStart(2,'0')}`;
+    if (dates.includes(expected)) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+// Export
+document.getElementById('btn-export').addEventListener('click', () => {
+  const logs = loadLogs();
+  const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `pipelife-logs-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📤 Data geëxporteerd!', 'success');
+});
+
+// Import
+document.getElementById('btn-import').addEventListener('click', () => {
+  document.getElementById('import-file-input').click();
+});
+
+document.getElementById('import-file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!Array.isArray(imported)) throw new Error('Ongeldig formaat');
+
+      openModal(`
+        <div class="modal-title">📥 Data importeren</div>
+        <p style="font-size:14px;color:var(--grey-700);margin-bottom:16px;line-height:1.5;">
+          Gevonden: <strong>${imported.length} logs</strong>.<br>
+          Wil je deze samenvoegen met je huidige data?
+        </p>
+        <button class="modal-btn primary" id="modal-import-merge">Samenvoegen</button>
+        <button class="modal-btn danger" id="modal-import-replace">Vervangen (alles wissen)</button>
+        <button class="modal-btn ghost" id="modal-cancel">Annuleren</button>
+      `);
+
+      document.getElementById('modal-import-merge').addEventListener('click', () => {
+        const existing = loadLogs();
+        const existingIds = new Set(existing.map(l => l.id));
+        const merged = [...existing, ...imported.filter(l => !existingIds.has(l.id))];
+        merged.sort((a,b) => b.createdAt?.localeCompare(a.createdAt || '') || 0);
+        saveLogs(merged);
+        showToast(`📥 ${imported.length} logs samengevoegd!`, 'success');
+        closeModal();
+      });
+
+      document.getElementById('modal-import-replace').addEventListener('click', () => {
+        saveLogs(imported);
+        showToast('📥 Data vervangen!', 'success');
+        closeModal();
+      });
+
+      document.getElementById('modal-cancel').addEventListener('click', closeModal);
+
+    } catch (err) {
+      showToast('❌ Ongeldig JSON-bestand', 'danger');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// Reset
+document.getElementById('btn-reset').addEventListener('click', () => {
+  openModal(`
+    <div class="modal-title">🗑️ Alles wissen</div>
+    <p style="font-size:14px;color:var(--grey-700);margin-bottom:16px;line-height:1.5;">
+      Weet je zeker dat je <strong>alle logs</strong> permanent wilt verwijderen?<br>
+      Dit kan <strong>niet</strong> ongedaan worden gemaakt.
+    </p>
+    <button class="modal-btn danger" id="modal-confirm-reset">Ja, alles wissen</button>
+    <button class="modal-btn ghost" id="modal-cancel">Annuleren</button>
+  `);
+
+  document.getElementById('modal-confirm-reset').addEventListener('click', () => {
+    saveLogs([]);
+    showToast('🗑️ Alle data gewist', 'warn');
+    closeModal();
+    renderSettings();
+  });
+
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+});
+
+// ============================================================
+//  INIT
+// ============================================================
+renderMachineGrid();
+
+</script>
+</body>
+</html>
