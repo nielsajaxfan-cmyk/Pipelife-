@@ -1756,5 +1756,12 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 renderMachineGrid();
 
 </script>
+   
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}
+</script>
+   
 </body>
 </html>
